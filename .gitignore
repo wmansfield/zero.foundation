@@ -3,6 +3,9 @@
 [Oo]bj/
 rcf/
 
+# Visual Studio code
+.vscode/
+
 # mstest test results
 TestResults
 
