@@ -4,18 +4,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Zero.Foundation.Plugins
 {
-   public interface IWebPlugin : IPlugin
-   {
-      bool WebInitialize(IFoundation foundation, IDictionary<string, string> pluginConfig);
-     
-      void Register();
+    public interface IWebPlugin : IPlugin
+    {
 
-      int DesiredRegistrationPriority { get; }
+        bool Construct(IFoundation foundation);
 
-      void OnWebPluginRegistered(IWebPlugin plugin);
-      void OnWebPluginUnRegistered(IWebPlugin iWebPlugin);
+        void Initialize();
 
-      void OnAfterWebPluginsRegistered(IEnumerable<IWebPlugin> allWebPlugins);
-      void OnAfterWebPluginsUnRegistered(IWebPlugin[] iWebPlugin);
-   }
+        int DesiredInitializionPriority { get; }
+
+        void OnWebPluginInitialized(IWebPlugin plugin);
+
+        void OnAllWebPluginsInitialized(IEnumerable<IWebPlugin> allWebPlugins);
+    }
 }
