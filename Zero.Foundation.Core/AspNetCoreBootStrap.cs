@@ -1,7 +1,5 @@
-using System.Collections.Generic;
-using System.Reflection;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Unity;
 using Zero.Foundation.Plugins;
@@ -10,10 +8,12 @@ namespace Zero.Foundation
 {
     public class AspNetCoreBootStrap : CoreBootStrap
     {
-        public AspNetCoreBootStrap()
+        public AspNetCoreBootStrap(IUnityContainer container, IWebHostEnvironment webHostEnvironment, IServiceCollection services, IConfiguration configuration)
         {
+            this.BindToAspNetCore(container, webHostEnvironment, services, configuration);
         }
 
+        
         public override void OnAfterPluginsLoaded(IFoundation foundation)
         {
             base.OnAfterPluginsLoaded(foundation);
@@ -34,7 +34,31 @@ namespace Zero.Foundation
         {
             // designed for overriding
         }
+       
 
+        public override void OnAfterBootStrapComplete(IFoundation foundation)
+        {
+            base.OnAfterBootStrapComplete(foundation);
+
+            this.InitializeControllers(foundation);
+        }
+
+        protected virtual void BindToAspNetCore(IUnityContainer container,IWebHostEnvironment webHostEnvironment, IServiceCollection services, IConfiguration configuration)
+        {
+            container.RegisterInstance<IConfiguration>(configuration);
+            container.RegisterInstance<IServiceCollection>(services);
+            container.RegisterInstance<IWebHostEnvironment>(webHostEnvironment);
+
+            services.AddMvcCore();
+        }
+        protected virtual void InitializeControllers(IFoundation foundation)
+        {
+            IServiceCollection services = foundation.Resolve<IServiceCollection>();
+
+            services.AddControllersWithViews()
+                    .AddControllersAsServices()
+                    .AddRazorRuntimeCompilation();
+        }
         
     }
 }
