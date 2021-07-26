@@ -39,8 +39,6 @@ namespace Zero.Foundation
         public override void OnAfterBootStrapComplete(IFoundation foundation)
         {
             base.OnAfterBootStrapComplete(foundation);
-
-            this.InitializeControllers(foundation);
         }
 
         protected virtual void BindToAspNetCore(IUnityContainer container,IWebHostEnvironment webHostEnvironment, IServiceCollection services, IConfiguration configuration)
@@ -51,14 +49,5 @@ namespace Zero.Foundation
 
             services.AddMvcCore();
         }
-        protected virtual void InitializeControllers(IFoundation foundation)
-        {
-            IServiceCollection services = foundation.Resolve<IServiceCollection>();
-
-            services.AddControllersWithViews()
-                    .AddControllersAsServices()
-                    .AddRazorRuntimeCompilation();
-        }
-        
     }
 }

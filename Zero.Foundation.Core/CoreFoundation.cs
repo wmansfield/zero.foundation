@@ -204,6 +204,8 @@ namespace Zero.Foundation
             // turn off logging [verbose only while boot strapping]
             this.Container.RegisterType<ILogger, WarningErrorLogger>();
             this.Container.RegisterType<ITracer, EmptyTracer>();
+            this.Container.RegisterType<ITracer, EmptyTracer>(ChokeLocation.Unknown);
+            this.Container.RegisterType<ITracer, EmptyTracer>(ChokeLocation.Method);
 
             manager.OnAfterBootStrapComplete();
             if (bootStrap != null) { bootStrap.OnAfterBootStrapComplete(this); }

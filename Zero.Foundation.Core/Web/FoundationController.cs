@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Unity;
 using Zero.Foundation.System;
 
 namespace Zero.Foundation.Web
 {
+    /// <summary>
+    /// A base class for an MVC controller with view support.
+    /// </summary>
     [DebuggerStepThrough]
     public class FoundationController : Controller
     {
@@ -37,17 +41,38 @@ namespace Zero.Foundation.Web
         {
             return IFoundation.GetAspectCoordinator().WrapFunctionCall<T>(this, methodName, parameters, false, this.IHandleExceptionProvider, function);
         }
-        protected virtual T ExecuteFunction<T>(string methodName, bool forceThrow, Func<T> function, params object[] parameters)
+        protected virtual Task<T> ExecuteFunctionAsync<T>(string methodName, Func<Task<T>> function, params object[] parameters)
         {
-            return IFoundation.GetAspectCoordinator().WrapFunctionCall<T>(this, methodName, parameters, forceThrow, this.IHandleExceptionProvider, function);
+            return IFoundation.GetAspectCoordinator().WrapFunctionCallAsync<T>(this, methodName, parameters, false, this.IHandleExceptionProvider, function);
+        }
+        protected virtual T ExecuteFunctionThrowing<T>(string methodName, Func<T> function, params object[] parameters)
+        {
+            return IFoundation.GetAspectCoordinator().WrapFunctionCall<T>(this, methodName, parameters, true, this.IHandleExceptionProvider, function);
+        }
+        protected virtual Task<T> ExecuteFunctionThrowingAsync<T>(string methodName, Func<Task<T>> function, params object[] parameters)
+        {
+            return IFoundation.GetAspectCoordinator().WrapFunctionCallAsync<T>(this, methodName, parameters, true, this.IHandleExceptionProvider, function);
         }
         protected virtual void ExecuteMethod(string methodName, Action action, params object[] parameters)
         {
             this.IFoundation.GetAspectCoordinator().WrapMethodCall(this, methodName, parameters, false, this.IHandleExceptionProvider, action);
         }
-        protected virtual void ExecuteMethod(string methodName, bool forceThrow, Action action, params object[] parameters)
+        protected virtual Task ExecuteMethodAsync(string methodName, Func<Task> action, params object[] parameters)
         {
-            this.IFoundation.GetAspectCoordinator().WrapMethodCall(this, methodName, parameters, forceThrow, this.IHandleExceptionProvider, action);
+            return this.IFoundation.GetAspectCoordinator().WrapMethodCallAsync(this, methodName, parameters, false, this.IHandleExceptionProvider, action);
+        }
+        protected virtual void ExecuteMethodThrowing(string methodName, Action action, params object[] parameters)
+        {
+            this.IFoundation.GetAspectCoordinator().WrapMethodCall(this, methodName, parameters, true, this.IHandleExceptionProvider, action);
+        }
+        protected virtual Task ExecuteMethodThrowingAsync(string methodName, Func<Task> action, params object[] parameters)
+        {
+            return this.IFoundation.GetAspectCoordinator().WrapMethodCallAsync(this, methodName, parameters, true, this.IHandleExceptionProvider, action);
+        }
+        [Obsolete("Incorrect api call, use the Async Version of this method", true)]
+        protected virtual void ExecuteMethod(string methodName, Func<Task> action, params object[] parameters)
+        {
+            this.IFoundation.GetAspectCoordinator().WrapMethodCall(this, methodName, parameters, false, this.IHandleExceptionProvider, () => action());
         }
 
     }
