@@ -32,9 +32,6 @@ namespace Zero.Foundation.Aspect
         public static ThreadLocal<string> ThreadLocalState = new ThreadLocal<string>();
 
         protected IHandleExceptionProvider IHandleExceptionProvider { get; set; }
-      public static AsyncLocal<string> AsyncLocalState = new AsyncLocal<string>();
-      public static ThreadLocal<string> ThreadLocalState = new ThreadLocal<string>();
-
 
         protected virtual T ExecuteFunction<T>(string methodName, Func<T> function, params object[] parameters)
         {
