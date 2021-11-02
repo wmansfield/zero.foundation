@@ -74,8 +74,13 @@ namespace Zero.Foundation.Web
         {
             this.IFoundation.GetAspectCoordinator().WrapMethodCall(this, methodName, parameters, false, this.IHandleExceptionProvider, () => action());
         }
+        [Obsolete("Incorrect api call, use the Async Version of this method", true)]
+        protected K ExecuteFunction<K>(string methodName, Func<Task<K>> function, params object[] parameters)
+        {
+            return IFoundation.GetAspectCoordinator().WrapFunctionCallAsync<K>(this, methodName, parameters, true, this.IHandleExceptionProvider, function).Result;
+        }
 
-        
-        
+
+
     }
 }
