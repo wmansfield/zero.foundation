@@ -64,8 +64,10 @@ namespace Zero.Foundation.Plugins.Implementations
         {
             return base.ExecuteFunction("InitializePlugins", delegate ()
             {
-                List<IWebPlugin> allPlugins = this.LoadPlugins();
-                List<IWebPlugin> loadedPlugins = new List<IWebPlugin>();
+                List<IWebPlugin> allPlugins = _LoadedPlugins.Values.ToList();
+
+                allPlugins.Sort(delegate (IWebPlugin l, IWebPlugin r) { return l.DesiredInitializionPriority.CompareTo(r.DesiredInitializionPriority); });
+                List<IWebPlugin> initializedPlugins = new List<IWebPlugin>();
 
                 foreach (IWebPlugin item in allPlugins)
                 {
@@ -73,12 +75,12 @@ namespace Zero.Foundation.Plugins.Implementations
                     {
                         base.Logger.Write(string.Format("Starting plugin '{0}-{1}'", item.DisplayName, item.DisplayVersion), Category.Trace);
                         item.Initialize();
-                        this.RaiseOnWebPluginInitialized(loadedPlugins, item);
-                        loadedPlugins.Add(item);
+                        this.RaiseOnWebPluginInitialized(initializedPlugins, item);
+                        initializedPlugins.Add(item);
                     }
                     catch (Exception ex)
                     {
-                        base.Logger.Write(string.Format("Error While Loading '{0}-{1}': {2}", item.DisplayName, item.DisplayVersion, ex.Message), Category.Error);
+                        base.Logger.Write(string.Format("Error While initializing '{0}-{1}': {2}", item.DisplayName, item.DisplayVersion, ex.Message), Category.Error);
                         bool rethrow = false;
                         Exception newExeption = null;
                         if (this.IHandleExceptionProvider != null)
@@ -93,18 +95,16 @@ namespace Zero.Foundation.Plugins.Implementations
                     }
                 }
 
-                this.RaiseOnAllWebPluginsInitialized(loadedPlugins);
-                _LATEST_REGISTERED_PLUGINS = loadedPlugins;
-                return loadedPlugins;
+                this.RaiseOnAllWebPluginsInitialized(initializedPlugins);
+                _LATEST_REGISTERED_PLUGINS = initializedPlugins;
+                return initializedPlugins;
             });
         }
 
-        public virtual List<IWebPlugin> LoadPlugins()
+        public virtual void LoadPlugins()
         {
-            return base.ExecuteFunction<List<IWebPlugin>>("LoadPlugins", delegate ()
+            base.ExecuteMethod("LoadPlugins", delegate ()
             {
-                List<IWebPlugin> plugins = new List<IWebPlugin>();
-
                 List<PluginConfig> pluginConfigs = this.AcquireAndLoadPluginAssemblies();
 
                 // Prepare Any Embedded assets
@@ -158,30 +158,29 @@ namespace Zero.Foundation.Plugins.Implementations
                             instance = _LoadedPlugins[item.PluginType];
                             if (instance != null)
                             {
-                                plugins.Add(instance);
-                                base.Logger.Write(string.Format("Added existing instance of '{0}-{1}'", item.SystemName, item.Version), Category.Trace);
+                                base.Logger.Write(string.Format("'{0}-{1}' is already loaded", item.SystemName, item.Version), Category.Trace);
                                 alreadyLoaded = true;
                             }
                         }
-                        base.Logger.Write(string.Format("Attempting to load existing foundation instance of '{0}-{1}'", item.SystemName, item.Version), Category.Trace);
+                        base.Logger.Write(string.Format("Attempting to load instance of '{0}-{1}'", item.SystemName, item.Version), Category.Trace);
 
                         if (instance == null)
                         {
                             instance = base.IFoundation.GetPluginManager().FoundationPlugins.FirstOrDefault(p => p.GetType() == item.PluginType) as IWebPlugin;
                             if (instance != null)
                             {
-                                plugins.Add(instance);
                                 _LoadedPlugins[item.PluginType] = instance;
-                                base.Logger.Write(string.Format("Added existing foundation instance of '{0}-{1}'", item.SystemName, item.Version), Category.Trace);
+                                base.Logger.Write(string.Format("Added existing instance of '{0}-{1}'", item.SystemName, item.Version), Category.Trace);
                                 alreadyLoaded = true;
                             }
                         }
 
-                        base.Logger.Write(string.Format("Attempting to create instance of '{0}-{1}'", item.SystemName, item.Version), Category.Trace);
 
                         // resolve or create
                         if (instance == null)
                         {
+                            base.Logger.Write(string.Format("Attempting to create instance of '{0}-{1}'", item.SystemName, item.Version), Category.Trace);
+
                             bool resolveSuccess = false;
                             if (!resolveSuccess)
                             {
@@ -208,7 +207,6 @@ namespace Zero.Foundation.Plugins.Implementations
                             {
                                 if (instance.Construct(base.IFoundation))
                                 {
-                                    plugins.Add(instance);
                                     _LoadedPlugins[item.PluginType] = instance;
 
                                     base.Logger.Write(string.Format("Added instance of '{0}-{1}'", item.SystemName, item.Version), Category.Trace);
@@ -234,8 +232,7 @@ namespace Zero.Foundation.Plugins.Implementations
                         base.Logger.Write(string.Format("Unable to load plugin for '{0}-{1}': {2}", item.SystemName, item.Version, ex.Message), Category.Error);
                     }
                 }
-                plugins.Sort(delegate (IWebPlugin l, IWebPlugin r) { return l.DesiredInitializionPriority.CompareTo(r.DesiredInitializionPriority); });
-                return plugins;
+                
             });
         }
 

@@ -34,7 +34,7 @@ namespace Zero.Foundation.Web
 
         }
 
-        protected virtual IFoundation IFoundation { get; set; }
+        public virtual IFoundation IFoundation { get; set; }
         protected virtual IHandleExceptionProvider IHandleExceptionProvider { get; set; }
 
         protected virtual T ExecuteFunction<T>(string methodName, Func<T> function, params object[] parameters)

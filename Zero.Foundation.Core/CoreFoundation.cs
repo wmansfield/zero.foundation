@@ -78,7 +78,7 @@ namespace Zero.Foundation
 
       #region Properties
 
-      protected IBootStrap BootStrap { get; set; }
+      public IBootStrap BootStrap { get; protected set; }
 
       public virtual IUnityContainer Container { get; protected set; }
 
@@ -131,7 +131,9 @@ namespace Zero.Foundation
 
             // Plugins
             this.Container.RegisterInstance<IPluginManager>(new CorePluginManager(this));
-            this.Container.RegisterType<IWebPluginLoader, WebPluginLoader>();
+            this.Container.RegisterSingleton<IWebPluginLoader, WebPluginLoader>();
+
+            if (bootStrap != null) { bootStrap.OnBeforePluginsLoaded(this); };
 
             IPluginManager manager = this.Container.Resolve<IPluginManager>();
             manager.LoadAllPlugins();
@@ -198,6 +200,9 @@ namespace Zero.Foundation
 
             // anything needed here?
             manager.OnBootStrapComplete();
+
+
+            if (bootStrap != null) { bootStrap.OnBeforeBootStrapComplete(this); }
 
             if (bootStrap != null) { bootStrap.OnBootStrapComplete(this); }
 

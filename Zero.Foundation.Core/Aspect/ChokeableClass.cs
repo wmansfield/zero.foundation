@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading;
 using Unity;
 using Zero.Foundation.System;
 
@@ -29,6 +30,8 @@ namespace Zero.Foundation.Aspect
 
       protected IHandleExceptionProvider IHandleExceptionProvider { get; set; }
 
+      public static AsyncLocal<string> AsyncLocalState = new AsyncLocal<string>();
+      public static ThreadLocal<string> ThreadLocalState = new ThreadLocal<string>();
 
       protected virtual T ExecuteFunction<T>(string methodName, Func<T> function, params object[] parameters)
       {

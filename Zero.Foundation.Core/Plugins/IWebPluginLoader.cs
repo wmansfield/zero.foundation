@@ -7,7 +7,7 @@ namespace Zero.Foundation.Plugins
    public interface IWebPluginLoader
    {
 
-      List<IWebPlugin> LoadPlugins();
+      void LoadPlugins();
       List<IWebPlugin> InitializePlugins();
 
       List<IWebPlugin> GetRegisteredPlugins();

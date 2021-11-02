@@ -11,6 +11,7 @@ namespace Zero.Foundation
         void Start(IUnityContainer container, IBootStrap bootStrap);
         void Stop();
         IUnityContainer Container { get; }
+        IBootStrap BootStrap { get; }
         ILogger GetLogger();
         ITracer GetTracer();
         IAspectCoordinator GetAspectCoordinator();

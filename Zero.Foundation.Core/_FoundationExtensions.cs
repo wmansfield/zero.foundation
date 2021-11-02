@@ -10,6 +10,25 @@ namespace Zero.Foundation
 {
     public static class _FoundationExtensions
     {
+        /// <summary>
+        /// Should only be used during bootstrapping.
+        /// Resolves T from the IFoundation or IServiceProvider. [In that order]
+        /// </summary>
+        public static T ResolveWithFallback<T>(this IFoundation iFoundation, params ResolverOverride[] overrides)
+        {
+            T result = iFoundation.SafeResolve<T>();
+            if(result != null)
+            {
+                return result;
+            }
+            
+            IServiceProvider provider = CoreFoundation.Current.SafeResolve<IServiceProvider>();
+            if(provider != null)
+            {
+                return provider.GetService<T>();
+            }
+            return default(T);
+        }
         public static T GetLastImplementation<T>(this IServiceCollection serviceCollection)
         {
             return (T)serviceCollection

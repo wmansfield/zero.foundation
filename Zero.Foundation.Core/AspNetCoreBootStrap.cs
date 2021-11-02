@@ -18,30 +18,12 @@ namespace Zero.Foundation
         {
             base.OnAfterPluginsLoaded(foundation);
 
-            IWebPluginLoader webPluginLoader = foundation.Resolve<IWebPluginLoader>();
-            webPluginLoader.LoadPlugins();
-            webPluginLoader.InitializePlugins();
+            this.OnBeforeLoadWebPlugins(foundation);
+            this.LoadWebPlugins(foundation);
+            this.OnAfterLoadWebPlugins(foundation);
         }
 
-        public override void OnAfterSelfRegisters(IFoundation foundation)
-        {
-            base.OnAfterSelfRegisters(foundation);
-
-            this.RegisterWebServices(foundation);
-        }
-
-        protected virtual void RegisterWebServices(IFoundation foundation)
-        {
-            // designed for overriding
-        }
-       
-
-        public override void OnAfterBootStrapComplete(IFoundation foundation)
-        {
-            base.OnAfterBootStrapComplete(foundation);
-        }
-
-        protected virtual void BindToAspNetCore(IUnityContainer container,IWebHostEnvironment webHostEnvironment, IServiceCollection services, IConfiguration configuration)
+        protected virtual void BindToAspNetCore(IUnityContainer container, IWebHostEnvironment webHostEnvironment, IServiceCollection services, IConfiguration configuration)
         {
             container.RegisterInstance<IConfiguration>(configuration);
             container.RegisterInstance<IServiceCollection>(services);
@@ -49,5 +31,25 @@ namespace Zero.Foundation
 
             services.AddMvcCore();
         }
+
+        protected virtual void LoadWebPlugins(IFoundation foundation)
+        {
+            IWebPluginLoader webPluginLoader = foundation.Resolve<IWebPluginLoader>();
+            webPluginLoader.LoadPlugins();
+        }
+        protected virtual void OnBeforeLoadWebPlugins(IFoundation foundation)
+        {
+            // lifecycle
+        }
+        protected virtual void OnAfterLoadWebPlugins(IFoundation foundation)
+        {
+            // lifecycle
+        }
+        public virtual void InitializeWebPlugins(IFoundation foundation)
+        {
+            IWebPluginLoader webPluginLoader = foundation.Resolve<IWebPluginLoader>();
+            webPluginLoader.InitializePlugins();
+        }
+       
     }
 }
