@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Unity;
@@ -28,8 +29,8 @@ namespace Zero.Foundation.Aspect
             this.IHandleExceptionProvider.PolicyName = this.GetType().ToString();
         }
 
-        public static AsyncLocal<string> AsyncLocalState = new AsyncLocal<string>();
-        public static ThreadLocal<string> ThreadLocalState = new ThreadLocal<string>();
+        public static AsyncLocal<Dictionary<string, object>> AsyncLocalState = new AsyncLocal<Dictionary<string, object>>();
+        public static ThreadLocal<Dictionary<string, object>> ThreadLocalState = new ThreadLocal<Dictionary<string, object>>();
 
         protected IHandleExceptionProvider IHandleExceptionProvider { get; set; }
 
