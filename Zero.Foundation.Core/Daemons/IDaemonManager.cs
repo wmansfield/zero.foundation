@@ -15,6 +15,7 @@ namespace Zero.Foundation.Daemons
       void UnRegisterAllDaemons();
       bool IsDaemonRegistered(string instanceName);
       IDaemonTask GetRegisteredDaemonTask(string instanceName);
+      IDaemonTask[] FindRegisteredDaemonTasks(Func<string, bool> predicate);
 
       ICollection<IDaemonTask> Tasks { get; }
       ICollection<IDaemon> LoadedDaemons { get; }
