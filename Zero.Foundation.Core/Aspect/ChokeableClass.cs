@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Unity;
 using Zero.Foundation.System;
 
@@ -51,5 +52,31 @@ namespace Zero.Foundation.Aspect
             base.IFoundation.GetAspectCoordinator().WrapMethodCall(this, methodName, parameters, forceThrow, this.IHandleExceptionProvider, action);
         }
 
+        protected virtual Task ExecuteMethodAsync(string methodName, Func<Task> action, params object[] parameters)
+        {
+            return this.IFoundation.GetAspectCoordinator().WrapMethodCallAsync(this, methodName, parameters, false, this.IHandleExceptionProvider, action);
+        }
+        protected virtual Task ExecuteMethodThrowingAsync(string methodName, Func<Task> action, params object[] parameters)
+        {
+            return this.IFoundation.GetAspectCoordinator().WrapMethodCallAsync(this, methodName, parameters, true, this.IHandleExceptionProvider, action);
+        }
+        protected virtual Task<T> ExecuteFunctionAsync<T>(string methodName, Func<Task<T>> function, params object[] parameters)
+        {
+            return IFoundation.GetAspectCoordinator().WrapFunctionCallAsync<T>(this, methodName, parameters, false, this.IHandleExceptionProvider, function);
+        }
+        protected virtual Task<T> ExecuteFunctionThrowingAsync<T>(string methodName, Func<Task<T>> function, params object[] parameters)
+        {
+            return IFoundation.GetAspectCoordinator().WrapFunctionCallAsync<T>(this, methodName, parameters, true, this.IHandleExceptionProvider, function);
+        }
+        [Obsolete("Incorrect api call, use the Async Version of this method", true)]
+        protected virtual void ExecuteMethod(string methodName, Func<Task> action, params object[] parameters)
+        {
+            this.IFoundation.GetAspectCoordinator().WrapMethodCall(this, methodName, parameters, false, this.IHandleExceptionProvider, () => action());
+        }
+        [Obsolete("Incorrect api call, use the Async Version of this method", true)]
+        protected K ExecuteFunction<K>(string methodName, Func<Task<K>> function, params object[] parameters)
+        {
+            return IFoundation.GetAspectCoordinator().WrapFunctionCallAsync<K>(this, methodName, parameters, true, this.IHandleExceptionProvider, function).Result;
+        }
     }
 }

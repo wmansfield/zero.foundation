@@ -66,7 +66,7 @@ namespace Zero.Foundation.Plugins.Implementations
             {
                 List<IWebPlugin> allPlugins = _LoadedPlugins.Values.ToList();
 
-                allPlugins.Sort(delegate (IWebPlugin l, IWebPlugin r) { return l.DesiredInitializionPriority.CompareTo(r.DesiredInitializionPriority); });
+                allPlugins.Sort(delegate (IWebPlugin l, IWebPlugin r) { return l.DesiredInitializationPriority.CompareTo(r.DesiredInitializationPriority); });
                 List<IWebPlugin> initializedPlugins = new List<IWebPlugin>();
 
                 foreach (IWebPlugin item in allPlugins)

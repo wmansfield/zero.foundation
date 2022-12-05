@@ -11,7 +11,7 @@ namespace Zero.Foundation.Plugins
 
         void Initialize();
 
-        int DesiredInitializionPriority { get; }
+        int DesiredInitializationPriority { get; }
 
         void OnWebPluginInitialized(IWebPlugin plugin);
 

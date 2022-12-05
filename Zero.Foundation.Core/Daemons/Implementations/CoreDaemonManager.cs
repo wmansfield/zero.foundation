@@ -15,8 +15,8 @@ namespace Zero.Foundation.Daemons.Implementations
         public CoreDaemonManager(IFoundation iFoundation)
             : base(iFoundation)
         {
-            InnerDaemonRegistrations = new Dictionary<string, DaemonRegistration>(StringComparer.OrdinalIgnoreCase);
-            InnerDaemons = new Dictionary<string, CoreDaemon>(StringComparer.OrdinalIgnoreCase);
+            this.InnerDaemonRegistrations = new Dictionary<string, DaemonRegistration>(StringComparer.OrdinalIgnoreCase);
+            this.InnerDaemons = new Dictionary<string, CoreDaemon>(StringComparer.OrdinalIgnoreCase);
 
             this.SharedItems = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
@@ -35,8 +35,6 @@ namespace Zero.Foundation.Daemons.Implementations
         #endregion
 
         #region Public Properties
-
-
 
         public virtual IDictionary<string, object> SharedItems { get; set; }
         public virtual ICollection<IDaemonTask> Tasks
@@ -60,7 +58,6 @@ namespace Zero.Foundation.Daemons.Implementations
         }
 
         public virtual bool BootStrapComplete { get; set; }
-        public virtual bool DisableAutoStart { get; set; }
 
         public virtual IDaemonSynchronizationHandler SynchronizationHandler { get; set; }
         public virtual IDaemonHost DaemonHost { get; set; }
@@ -77,7 +74,7 @@ namespace Zero.Foundation.Daemons.Implementations
                 List<string> daemons = this.InnerDaemonRegistrations.Keys.ToList();
                 foreach (string item in daemons)
                 {
-                    DaemonExecutionEstimate estimate = GetTimerDetail(item);
+                    DaemonExecutionEstimate estimate = this.GetTimerDetail(item);
                     if (estimate != null)
                     {
                         result.Add(estimate);
@@ -92,7 +89,7 @@ namespace Zero.Foundation.Daemons.Implementations
             {
                 if (InnerDaemons.ContainsKey(instanceName))
                 {
-                    CoreDaemon daemon = InnerDaemons[instanceName];
+                    CoreDaemon daemon = this.InnerDaemons[instanceName];
                     if (daemon != null)
                     {
                         DaemonExecutionEstimate estimate = new DaemonExecutionEstimate()
@@ -161,11 +158,12 @@ namespace Zero.Foundation.Daemons.Implementations
                 }
 
                 base.Logger.Write(string.Format("Registering DaemonTask: {0}.", config.InstanceName), Category.Trace);
-                this.InnerDaemonRegistrations[config.InstanceName] = new DaemonRegistration() { IDaemonTask = iDaemonTask, DaemonConfig = config };
-                if (autoStart)
-                {
-                    StartDaemon(config.InstanceName);
-                }
+                this.InnerDaemonRegistrations[config.InstanceName] = new DaemonRegistration() 
+                { 
+                    IDaemonTask = iDaemonTask, 
+                    DaemonConfig = config,
+                    AutoStart = autoStart
+                };
                 return true;
             });
         }
@@ -174,7 +172,9 @@ namespace Zero.Foundation.Daemons.Implementations
             return base.ExecuteFunction<bool>("UnRegisterDaemon", delegate ()
             {
                 base.Logger.Write(string.Format("UnRegistering DaemonTask: {0}.", instanceName), Category.Trace);
-                StopDaemon(instanceName);
+                
+                this.StopDaemon(instanceName);
+                
                 if (this.InnerDaemonRegistrations.ContainsKey(instanceName))
                 {
                     this.InnerDaemonRegistrations.Remove(instanceName);
@@ -228,7 +228,7 @@ namespace Zero.Foundation.Daemons.Implementations
                 {
                     try
                     {
-                        UnRegisterDaemon(key);
+                        this.UnRegisterDaemon(key);
                     }
                     catch (Exception ex)
                     {
@@ -238,7 +238,7 @@ namespace Zero.Foundation.Daemons.Implementations
             });
         }
 
-        public virtual void StartDaemons()
+        public virtual void StartDaemons(bool includeManualStart)
         {
             base.ExecuteMethod("StartDaemons", delegate ()
             {
@@ -248,16 +248,24 @@ namespace Zero.Foundation.Daemons.Implementations
                     return;
                 }
 
-                List<string> keys = this.InnerDaemonRegistrations.Keys.ToList();
-                foreach (string key in keys)
+                List<string> instanceNames = this.InnerDaemonRegistrations.Keys.ToList();
+                foreach (string instanceName in instanceNames)
                 {
                     try
                     {
-                        StartDaemon(key);
+                        DaemonRegistration registration = this.InnerDaemonRegistrations[instanceName];
+                        if(includeManualStart || registration.AutoStart)
+                        {
+                            this.StartDaemon(instanceName);
+                        }
+                        else
+                        {
+                            this.EnsureInnerDeamon(instanceName);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        base.Logger.Write(string.Format("Error Starting DaemonTask: {0}. Error: {1}", key, ex.Message), Category.Warning);
+                        base.Logger.Write(string.Format("Error Starting DaemonTask: {0}. Error: {1}", instanceName, ex.Message), Category.Warning);
                     }
                 }
             });
@@ -276,7 +284,7 @@ namespace Zero.Foundation.Daemons.Implementations
                 {
                     try
                     {
-                        StopDaemon(key);
+                        this.StopDaemon(key);
                     }
                     catch (Exception ex)
                     {
@@ -296,39 +304,12 @@ namespace Zero.Foundation.Daemons.Implementations
                     return;
                 }
                 base.Logger.Write(string.Format("Starting DaemonTask: {0}.", instanceName), Category.Trace);
-                if (!InnerDaemons.ContainsKey(instanceName))
-                {
 
-                    if (InnerDaemonRegistrations.ContainsKey(instanceName))
-                    {
-                        DaemonRegistration registration = InnerDaemonRegistrations[instanceName];
-                        if ((registration != null) && (registration.IDaemonTask != null) && (registration.DaemonConfig != null))
-                        {
-                            IHandleExceptionProvider exceptionHandlerProvider = base.IFoundation.SafeResolve<IHandleExceptionProvider>(FoundationAssumptions.SWALLOWED_EXCEPTION_HANDLER);
-                            if (exceptionHandlerProvider == null)
-                            {
-                                exceptionHandlerProvider = base.IFoundation.Container.Resolve<IHandleExceptionProvider>();
-                            }
-                            this.InnerDaemons[instanceName] = new CoreDaemon(base.IFoundation, exceptionHandlerProvider, instanceName, registration.DaemonConfig, registration.IDaemonTask, this);
-                        }
-                        else
-                        {
-                            base.Logger.Write(string.Format("DaemonTask '{0}' was null.", instanceName), Category.Warning);
-                        }
-                    }
-                    else
-                    {
-                        base.Logger.Write(string.Format("Unable to find DaemonTask: {0}.", instanceName), Category.Warning);
-                        throw new InvalidOperationException(string.Format("Unable to find DaemonTask: {0}.", instanceName));
-                    }
-                }
-                else
+                this.EnsureInnerDeamon(instanceName);
+
+                if (this.InnerDaemons.ContainsKey(instanceName))
                 {
-                    base.Logger.Write(string.Format("DaemonTask '{0}' was already present.", instanceName), Category.Trace);
-                }
-                if (InnerDaemons.ContainsKey(instanceName))
-                {
-                    InnerDaemons[instanceName].Start();
+                    this.InnerDaemons[instanceName].Start();
                 }
             });
         }
@@ -342,15 +323,15 @@ namespace Zero.Foundation.Daemons.Implementations
                     return;
                 }
                 base.Logger.Write(string.Format("Stopping DaemonTask: {0}.", instanceName), Category.Trace);
-             // if its an IDaemon, stop it, dispose it, remove it
-             if (InnerDaemons.ContainsKey(instanceName))
+                // if its an IDaemon, stop it, dispose it, remove it
+                if (this.InnerDaemons.ContainsKey(instanceName))
                 {
-                    CoreDaemon daemon = InnerDaemons[instanceName];
+                    CoreDaemon daemon = this.InnerDaemons[instanceName];
                     if (daemon != null)
                     {
                         daemon.Dispose();
                     }
-                    InnerDaemons.Remove(instanceName);
+                    this.InnerDaemons.Remove(instanceName);
                 }
             });
         }
@@ -363,10 +344,8 @@ namespace Zero.Foundation.Daemons.Implementations
                 this.DaemonHost = this.IFoundation.Container.Resolve<IDaemonHost>();
 
                 this.BootStrapComplete = true;
-                if (!this.DisableAutoStart)
-                {
-                    this.StartDaemons();
-                }
+
+                this.StartDaemons(false);
             });
         }
 
@@ -385,9 +364,50 @@ namespace Zero.Foundation.Daemons.Implementations
             });
         }
 
+
+        protected virtual bool EnsureInnerDeamon(string instanceName)
+        {
+            return base.ExecuteFunction("EnsureInnerDeamon", delegate ()
+            {
+                if (!this.InnerDaemons.ContainsKey(instanceName))
+                {
+                    if (this.InnerDaemonRegistrations.ContainsKey(instanceName))
+                    {
+                        DaemonRegistration registration = this.InnerDaemonRegistrations[instanceName];
+                        if ((registration != null) && (registration.IDaemonTask != null) && (registration.DaemonConfig != null))
+                        {
+                            IHandleExceptionProvider exceptionHandlerProvider = base.IFoundation.SafeResolve<IHandleExceptionProvider>(FoundationAssumptions.SWALLOWED_EXCEPTION_HANDLER);
+                            if (exceptionHandlerProvider == null)
+                            {
+                                exceptionHandlerProvider = base.IFoundation.Container.Resolve<IHandleExceptionProvider>();
+                            }
+                            this.InnerDaemons[instanceName] = new CoreDaemon(base.IFoundation, exceptionHandlerProvider, instanceName, registration.DaemonConfig, registration.IDaemonTask, this);
+                            return true;
+                        }
+                        else
+                        {
+                            base.Logger.Write(string.Format("DaemonTask '{0}' was null.", instanceName), Category.Warning);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        base.Logger.Write(string.Format("Unable to find DaemonTask: {0}.", instanceName), Category.Warning);
+                        return false;
+                    }
+                }
+                else
+                {
+                    base.Logger.Write(string.Format("DaemonTask '{0}' was already present.", instanceName), Category.Trace);
+                    return true;
+                }
+            });
+        }
+
         #endregion
 
         #region IDisposable Members
+
 
         protected virtual void Dispose(bool isDisposing)
         {
@@ -395,7 +415,7 @@ namespace Zero.Foundation.Daemons.Implementations
             {
                 try
                 {
-                    UnRegisterAllDaemons();
+                    this.UnRegisterAllDaemons();
                 }
                 catch { }
                 try

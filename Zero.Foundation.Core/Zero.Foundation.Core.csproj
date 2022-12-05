@@ -9,10 +9,10 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/wmansfield/zero.foundation.git</RepositoryUrl>
-    <AssemblyVersion>1.0.10.0</AssemblyVersion>
-    <FileVersion>1.0.10.0</FileVersion>
+    <AssemblyVersion>1.0.12.0</AssemblyVersion>
+    <FileVersion>1.0.12.0</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.10</Version>
+    <Version>1.0.12</Version>
   </PropertyGroup>
 
   <ItemGroup>

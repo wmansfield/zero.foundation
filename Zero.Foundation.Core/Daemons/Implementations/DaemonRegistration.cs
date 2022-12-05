@@ -4,5 +4,6 @@ namespace Zero.Foundation.Daemons.Implementations
     {
         public IDaemonTask IDaemonTask { get; set; }
         public DaemonConfig DaemonConfig { get; set; }
+        public bool AutoStart { get; set; }
     }
 }
