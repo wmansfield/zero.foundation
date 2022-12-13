@@ -7,12 +7,14 @@
     <Company>Foundation Zero, LLC</Company>
     <Product>Zero Foundation</Product>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl></PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/wmansfield/zero.foundation</PackageProjectUrl>
     <RepositoryUrl>https://github.com/wmansfield/zero.foundation.git</RepositoryUrl>
-    <AssemblyVersion>1.0.12.0</AssemblyVersion>
-    <FileVersion>1.0.12.0</FileVersion>
+    <AssemblyVersion>1.0.14.0</AssemblyVersion>
+    <FileVersion>1.0.14.0</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.13</Version>
+    <Version>1.0.14</Version>
+    <Title>Zero Foundation</Title>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
