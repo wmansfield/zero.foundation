@@ -164,6 +164,18 @@ namespace Zero.Foundation.Daemons.Implementations
                     DaemonConfig = config,
                     AutoStart = autoStart
                 };
+
+                if (this.BootStrapComplete)
+                {
+                    if (autoStart)
+                    {
+                        this.StartDaemon(config.InstanceName);
+                    }
+                    else
+                    {
+                        this.EnsureInnerDeamon(config.InstanceName);
+                    }
+                }
                 return true;
             });
         }

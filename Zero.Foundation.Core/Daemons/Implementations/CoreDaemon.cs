@@ -219,8 +219,8 @@ namespace Zero.Foundation.Daemons.Implementations
         {
             base.ExecuteMethod("Timer_Tick", delegate ()
             {
-             // prevent race conditions due to slow cpu performance
-             bool shouldContinue = false;
+                // prevent race conditions due to slow cpu performance
+                bool shouldContinue = false;
                 lock (_tickRoot)
                 {
                     if (!_isTicking)
@@ -232,8 +232,8 @@ namespace Zero.Foundation.Daemons.Implementations
                 if (!shouldContinue)
                 {
                     base.Logger.Write(string.Format("{0}:: Timer Tick Race Condition Detected", this.Config.InstanceName), Category.Trace);
-                 // let the next timer tick or allow it to be aborted as part of execution process
-                 return;
+                    // let the next timer tick or allow it to be aborted as part of execution process
+                    return;
                 }
                 try
                 {
