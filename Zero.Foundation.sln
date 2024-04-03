@@ -1,9 +1,9 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zero.Foundation.Core", "Zero.Foundation.Core\Zero.Foundation.Core.csproj", "{71A6DB74-B7FB-45DD-B9BE-E4CAF166B95A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zero.Foundation.Core", "Zero.Foundation.Core\Zero.Foundation.Core.csproj", "{71A6DB74-B7FB-45DD-B9BE-E4CAF166B95A}"
 EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution

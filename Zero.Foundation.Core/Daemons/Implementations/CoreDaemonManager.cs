@@ -223,7 +223,10 @@ namespace Zero.Foundation.Daemons.Implementations
                 {
                     if (this.InnerDaemonRegistrations.TryGetValue(key, out DaemonRegistration instance))
                     {
-                        result.Add(instance.IDaemonTask);
+                        if (predicate(key))
+                        {
+                            result.Add(instance.IDaemonTask);
+                        }
                     }
                 }
                 
